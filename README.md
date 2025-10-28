@@ -92,6 +92,11 @@ npm run dev
 - Client defaults to `http://localhost:5173`
 - During development the Vite dev server proxies `/api` requests to the Express server
 
+## Live Demo
+
+- **Client**: https://real-time-communication-with-socket-eight.vercel.app/
+- **API / Socket Server**: https://real-time-communication-with-socket-io-km0o.onrender.com/
+
 ## Environment Variables
 
 | Location | Variable | Description |
