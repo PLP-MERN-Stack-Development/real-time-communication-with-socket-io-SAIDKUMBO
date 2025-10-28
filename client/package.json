@@ -1,0 +1,23 @@
+{
+  "name": "socket-chat-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "React front-end for the Week 5 real-time chat assignment",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.11",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^7.1.12"
+  }
+}

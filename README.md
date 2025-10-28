@@ -1,77 +1,137 @@
-# Real-Time Chat Application with Socket.io
+# Real-Time Communication with Socket.io
 
-This assignment focuses on building a real-time chat application using Socket.io, implementing bidirectional communication between clients and server.
+A full-stack real-time chat application built with Express, Socket.io, and React for the PLP Week 5 assignment. Users can collaborate in public rooms or private conversations with live updates, reactions, read receipts, and notifications.
 
-## Assignment Overview
+## Features
 
-You will build a chat application with the following features:
-1. Real-time messaging using Socket.io
-2. User authentication and presence
-3. Multiple chat rooms or private messaging
-4. Real-time notifications
-5. Advanced features like typing indicators and read receipts
+- Real-time message delivery with delivery and read acknowledgements
+- Username-based sign-in with online/offline presence tracking
+- Multiple chat rooms (create/join) plus direct messages between users
+- Typing indicators for rooms and DMs
+- Message reactions (👍 ❤️ 😂 🎉 👀)
+- Private and room read receipts with last-seen tracking
+- Toast, sound, and browser notifications for new activity
+- Message search per room and unread counters per conversation
+- Message history pagination and automatic reconnection logic
+
+### Advanced Features Implemented
+
+- Private messaging between any two users
+- Multiple chat rooms with dynamic creation and membership events
+- Message reactions with live updates
+- Read receipts for both rooms and direct messages
+- Real-time notifications (toast, sound, browser) for joins and messages
+- Message pagination and reconnection handling for resilient UX
+
+## Tech Stack
+
+- **Client**: React 18 + Vite, Socket.io client, Day.js, clsx
+- **Server**: Node.js 18+, Express 4, Socket.io 4, UUID, Dotenv, CORS
 
 ## Project Structure
 
 ```
-socketio-chat/
-├── client/                 # React front-end
-│   ├── public/             # Static files
-│   ├── src/                # React source code
-│   │   ├── components/     # UI components
-│   │   ├── context/        # React context providers
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── pages/          # Page components
-│   │   ├── socket/         # Socket.io client setup
-│   │   └── App.jsx         # Main application component
-│   └── package.json        # Client dependencies
-├── server/                 # Node.js back-end
-│   ├── config/             # Configuration files
-│   ├── controllers/        # Socket event handlers
-│   ├── models/             # Data models
-│   ├── socket/             # Socket.io server setup
-│   ├── utils/              # Utility functions
-│   ├── server.js           # Main server file
-│   └── package.json        # Server dependencies
-└── README.md               # Project documentation
+client/
+  index.html
+  package.json
+  src/
+    App.jsx
+    main.jsx
+    components/
+    context/
+    socket/
+    styles/
+    utils/
+server/
+  package.json
+  server.js
+  .env.example
+README.md
+Week5-Assignment.md
 ```
 
-## Getting Started
+## Prerequisites
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Follow the setup instructions in the `Week5-Assignment.md` file
-4. Complete the tasks outlined in the assignment
+- Node.js **18.x** or higher
+- npm (included with Node.js)
 
-## Files Included
+## Setup Instructions
 
-- `Week5-Assignment.md`: Detailed assignment instructions
-- Starter code for both client and server:
-  - Basic project structure
-  - Socket.io configuration templates
-  - Sample components for the chat interface
+1. Clone your GitHub Classroom repo (or this project) and move into it
+2. Install server dependencies:
 
-## Requirements
+   ```bash
+   cd server
+   npm install
+   cp .env.example .env   # optional: customise PORT and CLIENT_URL
+   ```
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Modern web browser
-- Basic understanding of React and Express
+3. Install client dependencies:
 
-## Submission
+   ```bash
+   cd ../client
+   npm install
+   cp .env.example .env    # optional: customise VITE_SOCKET_URL
+   ```
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+## Running the Application
 
-1. Complete both the client and server portions of the application
-2. Implement the core chat functionality
-3. Add at least 3 advanced features
-4. Document your setup process and features in the README.md
-5. Include screenshots or GIFs of your working application
-6. Optional: Deploy your application and add the URLs to your README.md
+Use two terminals (or background processes):
 
-## Resources
+```bash
+# terminal 1 - start the Socket.io server
+cd server
+npm run dev
 
-- [Socket.io Documentation](https://socket.io/docs/v4/)
-- [React Documentation](https://react.dev/)
-- [Express.js Documentation](https://expressjs.com/)
-- [Building a Chat Application with Socket.io](https://socket.io/get-started/chat) 
+# terminal 2 - start the React client
+cd client
+npm run dev
+```
+
+- Server defaults to `http://localhost:5000`
+- Client defaults to `http://localhost:5173`
+- During development the Vite dev server proxies `/api` requests to the Express server
+
+## Environment Variables
+
+| Location | Variable | Description |
+| --- | --- | --- |
+| `server/.env` | `PORT` | Port for Express/Socket.io (default 5000) |
+|  | `CLIENT_URL` | Comma-separated list of allowed origins (default `http://localhost:5173`) |
+| `client/.env` | `VITE_SOCKET_URL` | Socket server URL (default `http://localhost:5000`) |
+
+## Implementation Highlights
+
+- **Rooms & Presence**: Users join `#general` on login, can browse/create rooms, and see live member counts and presence updates.
+- **Direct Messages**: Deterministic thread IDs keep DM history between the same usernames. Read receipts update for both parties in real time.
+- **Typing Indicators**: Per-room and per-thread typing states with automatic clear-down after inactivity.
+- **Message State**: Delivery/read acknowledgements, reaction toggles, and message pagination exposable through sockets and REST.
+- **Notifications**: Toasts, audio cues, and optional browser notifications respect window visibility before alerting users.
+- **Search**: Server-side search endpoint surfaces per-room matches with quick navigation.
+
+## Testing & Verification
+
+- Manual testing covering:
+  - Multi-tab conversations for room and DM flows
+  - Typing, reactions, and read receipts
+  - Reconnection after network toggle
+  - Message pagination and search
+- Additional automated testing can be added via Vitest or Jest on the client side and SuperTest on the server to cover socket event flows and REST endpoints.
+
+![alt text](<Screenshot 2025-10-28 123645.png>) ![alt text](<Screenshot 2025-10-28 123605.png>) ![alt text](<Screenshot 2025-10-28 123619.png>)
+
+## Next Steps / Enhancements
+
+- Persist conversations with a database (e.g., MongoDB, PostgreSQL)
+- Add file/image sharing with secure uploads
+- Implement message pinning/starred items and channel topics
+- Support offline DM queuing and email push notifications
+- Harden validation and rate limiting for production deployments
+
+## Screenshots / Demo
+
+Add screenshots or a short screen recording here to showcase the UX (required by the assignment rubric).
+
+---
+
+For assignment requirements, refer to `Week5-Assignment.md`. Feel free to open issues or pull requests with improvements.
