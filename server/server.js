@@ -4,11 +4,22 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const Sentry = require('@sentry/node');
 const dotenv = require('dotenv');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 dotenv.config();
+
+// Initialize Sentry if DSN is provided (optional)
+if (process.env.SENTRY_DSN) {
+  try {
+    Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV || 'development' });
+    console.log('Sentry initialized');
+  } catch (err) {
+    console.warn('Failed to initialize Sentry:', err.message || err);
+  }
+}
 
 const DEFAULT_ROOMS = [
   {
@@ -36,6 +47,10 @@ const parseOrigins = (value) =>
 const allowedOrigins = parseOrigins(process.env.CLIENT_URL || 'http://localhost:5173');
 
 const app = express();
+// Attach Sentry request handler early so it can capture requests
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.requestHandler());
+}
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -365,6 +380,12 @@ app.get('/api/users', (req, res) => {
 app.get('/', (req, res) => {
   res.send('Socket.io Chat Server is running');
 });
+
+// Health endpoint for uptime checks / monitoring
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), now: new Date().toISOString() });
+});
+
 
 io.on('connection', (socket) => {
   socket.on('user_join', (payload, ack) => {
@@ -851,3 +872,17 @@ server.listen(PORT, () => {
 });
 
 module.exports = { app, server, io };
+
+// Attach Sentry error handler (if enabled) and a generic error handler
+if (process.env.SENTRY_DSN) {
+  // Sentry's error handler must be added after all routes
+  app.use(Sentry.Handlers.errorHandler());
+}
+
+// Generic error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err && (err.stack || err.message || err));
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});

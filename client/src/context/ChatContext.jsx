@@ -560,6 +560,24 @@ export const ChatProvider = ({ children }) => {
       dispatch({ type: Actions.SET_CONNECTED, payload: false });
     };
 
+    const onConnectError = (err) => {
+      console.error('Socket connect error:', err);
+      dispatch({ type: Actions.SET_CONNECTING, payload: false });
+      dispatch({
+        type: Actions.ADD_TOAST,
+        payload: createToast({ title: 'Connection error', message: 'Unable to connect to the chat server. Check server URL and CORS settings.' }),
+      });
+    };
+
+    const onConnectTimeout = () => {
+      console.error('Socket connect timeout');
+      dispatch({ type: Actions.SET_CONNECTING, payload: false });
+      dispatch({
+        type: Actions.ADD_TOAST,
+        payload: createToast({ title: 'Connection timeout', message: 'Connection to the chat server timed out.' }),
+      });
+    };
+
     const onRoomList = (payload) => {
       payload.forEach((room) => ensureRoomExists(room));
     };
@@ -662,6 +680,8 @@ export const ChatProvider = ({ children }) => {
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
+  socket.on('connect_error', onConnectError);
+  socket.on('connect_timeout', onConnectTimeout);
     socket.on('initial_state', handleInitialState);
     socket.on('room_list', onRoomList);
     socket.on('room_joined', onRoomJoined);
