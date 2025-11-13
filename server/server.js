@@ -44,7 +44,11 @@ const parseOrigins = (value) =>
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-const allowedOrigins = parseOrigins(process.env.CLIENT_URL || 'http://localhost:5173');
+const allowedOrigins = parseOrigins(process.env.CLIENT_URL || process.env.CLIENT_ORIGIN || '');
+
+// If no CLIENT_URL is provided in the environment, allow all origins (useful for quick deploys).
+const allowAllOrigins = allowedOrigins.length === 0;
+console.log('Allowed origins for CORS:', allowAllOrigins ? 'ALL (no CLIENT_URL set)' : allowedOrigins);
 
 const app = express();
 // Attach Sentry request handler early so it can capture requests
@@ -54,7 +58,7 @@ if (process.env.SENTRY_DSN) {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: allowAllOrigins ? true : allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -62,7 +66,7 @@ const io = new Server(server, {
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: allowAllOrigins ? true : allowedOrigins,
     credentials: true,
   })
 );
