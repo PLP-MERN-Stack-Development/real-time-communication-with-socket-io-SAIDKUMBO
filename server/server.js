@@ -73,6 +73,10 @@ app.use(
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Respond to browser favicon requests with 204 No Content to avoid noisy 404s.
+// If you'd rather serve a real favicon, place `favicon.ico` in `server/public/`.
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 const users = new Map();
 const usernameToSocketId = new Map();
 const rooms = new Map();
