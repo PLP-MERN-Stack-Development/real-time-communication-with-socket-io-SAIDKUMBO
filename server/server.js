@@ -390,6 +390,23 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), now: new Date().toISOString() });
 });
 
+// Runtime client configuration endpoint
+// Returns the socket URL the client should use. Prefers explicit env vars
+// (SOCKET_URL or VITE_SOCKET_URL) and falls back to the request origin.
+app.get('/client-config', (req, res) => {
+  try {
+    const socketUrl =
+      process.env.SOCKET_URL || process.env.VITE_SOCKET_URL || `${req.protocol}://${req.get('host')}`;
+
+    // Small cache header to allow clients and proxies to cache for a short duration
+    res.set('Cache-Control', 'public, max-age=60');
+    res.json({ socketUrl });
+  } catch (err) {
+    console.error('Error building client-config response', err && (err.stack || err.message || err));
+    res.status(500).json({ error: 'Unable to build client config' });
+  }
+});
+
 
 io.on('connection', (socket) => {
   socket.on('user_join', (payload, ack) => {
