@@ -3,10 +3,13 @@
 import { io } from 'socket.io-client';
 
 
-// Prefer VITE_SOCKET_URL (set in Vercel). If missing, use localhost for dev;
-// otherwise fall back to the deployed Render backend URL so the production
-// client doesn't try to connect to localhost.
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://real-time-communication-with-socket-io-km0o.onrender.com');
+// Resolution order (prefer runtime-configurable values):
+// 1) window.__VITE_SOCKET_URL (can be injected at runtime by the host / index.html)
+// 2) a <meta name="socket-url" content="..."> tag in index.html
+// 3) import.meta.env.VITE_SOCKET_URL (build-time, Vercel env)
+// 4) localhost (dev) or a sensible production fallback (Render URL)
+const runtimeSocket = (typeof window !== 'undefined') ? (window.__VITE_SOCKET_URL || (document.querySelector('meta[name="socket-url"]') && document.querySelector('meta[name="socket-url"]').getAttribute('content'))) : null;
+const SOCKET_URL = runtimeSocket || import.meta.env.VITE_SOCKET_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://real-time-communication-with-socket-io-km0o.onrender.com');
 
 // Allow polling fallback for environments where websocket transport may be blocked.
 export const socket = io(SOCKET_URL, {
